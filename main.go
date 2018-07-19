@@ -186,12 +186,12 @@ func main() {
 	certificateSigningRequest := &certificates.CertificateSigningRequest{
 		Metadata: &v1.ObjectMeta{
 			Name: k8s.String(certificateSigningRequestName),
-			Namespace: k8s.String(namespace),
+			// Namespace: k8s.String(namespace), // XXX: CSRs are not namespaced in k8s 1.11?
 		},
 		Spec: &certificates.CertificateSigningRequestSpec{
-			Groups:   []string{"system:authenticated"},
-			Request:  certificateRequestBytes,
-			Usages: []string{"digital signature", "key encipherment", "server auth", "client auth"},
+			Groups:  []string{"system:authenticated"},
+			Request: certificateRequestBytes,
+			Usages:  []string{"digital signature", "key encipherment", "server auth", "client auth"},
 		},
 	}
 
@@ -205,7 +205,7 @@ func main() {
 	log.Println("waiting for certificate...")
 	for {
 		var csr certificates.CertificateSigningRequest
-		err := client.Get(context.Background(), namespace, certificateSigningRequestName, &csr)
+		err := client.Get(context.Background(), "", certificateSigningRequestName, &csr)
 		if err != nil {
 			log.Printf("unable to retrieve certificate signing request (%s): %s", certificateSigningRequestName, err)
 			time.Sleep(5 * time.Second)
